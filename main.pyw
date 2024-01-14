@@ -81,6 +81,9 @@ screen_height = monitor_area[3]
 screen_width = monitor_area[2]
 taskbar_height = screen_height-work_area[3]
 
+screen_height = 1080
+screen_width = 1920 # nvm
+
 def __init__():
     global win
     global mainNet
