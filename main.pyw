@@ -14,7 +14,7 @@ from win32api import GetMonitorInfo, MonitorFromPoint, GetSystemMetrics
 mainWifi = "TotalWifi"
 robotWifi = "3065"
 
-X,Y = 1750,985
+xOffset, yOffset = 0,0    #edit based on your screen
 
 class rippleButton(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -94,7 +94,7 @@ def __init__():
     win.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
     win.setWindowFlag(QtCore.Qt.Tool) 
 
-    win.setGeometry(screen_width - width ,screen_height - taskbar_height - height, width, height) # auto position gui to screen
+    win.setGeometry(screen_width - width + xOffset,screen_height - taskbar_height - height - yOffset, width, height) # auto position gui to screen
 
     win.tray_icon = QtWidgets.QSystemTrayIcon(win)
     win.tray_icon.setIcon(win.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
