@@ -9,6 +9,14 @@ import os
 import sys
 from time import sleep
 
+from win32api import GetMonitorInfo, MonitorFromPoint, GetSystemMetrics
+
+monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
+monitor_area = monitor_info.get("Monitor")
+work_area = monitor_info.get("Work")
+screen_height = monitor_area[3]
+taskbar_height = screen_height-work_area[3]
+
 mainWifi = "TotalWifi"
 robotWifi = "3065"
 
@@ -77,14 +85,15 @@ def __init__():
     global mainNet
     global robotNet
     app = QApplication(sys.argv)
-    win = loadUi("main.ui")
+    win = QDialog()
+    height,width = 51,171
 
     win.setWindowFlag(QtCore.Qt.FramelessWindowHint)
     win.setAttribute(Qt.WA_TranslucentBackground,True)
     win.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
     win.setWindowFlag(QtCore.Qt.Tool) 
 
-    win.setGeometry(X,Y,180,56)
+    win.setGeometry(X,screen_height-taskbar_height - height,width,height)
 
     win.tray_icon = QtWidgets.QSystemTrayIcon(win)
     win.tray_icon.setIcon(win.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
