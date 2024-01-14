@@ -48,7 +48,6 @@ class rippleButton(QPushButton):
             qp.drawEllipse(self.rect().center(), self._radius, self._radius)
             qp.setOpacity(self._animation.currentValue() / 300)
 
-
 class NetCheckerThread(QThread):
     def run(self):
         while 1:
@@ -127,12 +126,12 @@ def __init__():
     win.show()
 
     sys.exit(app.exec_())
-
     
 def createMainConnection():
-    os.system(f'cmd /c "netsh wlan connect name="{mainWifi}"')
+    os.popen(f'netsh wlan connect name="{mainWifi}"')
+    
 def createRobotConnection():
-    os.system(f'cmd /c "netsh wlan connect name="{robotWifi}"')
+    os.system(f'netsh wlan connect name="{robotWifi}"')
 
 __init__()
 
