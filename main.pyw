@@ -106,17 +106,20 @@ def __init__():
     mainNet.setGeometry(10,10,71,31)
     mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
+    mainNet.clicked.connect(createMainConnection)
+
     networks.append(mainNet)
 
     robotNet = rippleButton(robotWifi,win)
     robotNet.setGeometry(90,10,71,31)
     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
+    robotNet.clicked.connect(createRobotConnection)
+
     networks.append(robotNet)
 
     NTC = NetCheckerThread()
     NTC.start()
-
 
     tray_menu = QMenu()
     tray_menu.addAction(show_action)
@@ -130,9 +133,10 @@ def __init__():
     sys.exit(app.exec_())
 
     
-
-def createConnection(netName):
-    pass
+def createMainConnection():
+    os.system(f'cmd /c "netsh wlan connect name="{mainWifi}"')
+def createRobotConnection():
+    os.system(f'cmd /c "netsh wlan connect name="{robotWifi}"')
 
 __init__()
 
