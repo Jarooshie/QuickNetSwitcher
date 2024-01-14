@@ -129,9 +129,9 @@ def __init__():
     
 def createMainConnection():
     os.popen(f'netsh wlan connect name="{mainWifi}"')
-    
+
 def createRobotConnection():
-    os.system(f'netsh wlan connect name="{robotWifi}"')
+    os.popen(f'netsh wlan connect name="{robotWifi}"')
 
 __init__()
 
