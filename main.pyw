@@ -1,24 +1,18 @@
-from PyQt5 import QtWidgets,QtGui,QtCore
-from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu
+from PyQt5 import QtWidgets,QtCore
 from PyQt5.uic import loadUi
-from PyQt5.QtCore import Qt, QPoint
-from PyQt5.QtGui import QImage
-from time import sleep
-import sys
 
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
 
 import os
-
-import subprocess
-
+import sys
+from time import sleep
 
 mainWifi = "TotalWifi"
 robotWifi = "3065"
 
-
+X,Y = 1750,985
 
 class rippleButton(QPushButton):
     def __init__(self, *args, **kwargs):
@@ -90,6 +84,8 @@ def __init__():
     win.setAttribute(Qt.WA_TranslucentBackground,True)
     win.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
     win.setWindowFlag(QtCore.Qt.Tool) 
+
+    win.setGeometry(X,Y,180,56)
 
     win.tray_icon = QtWidgets.QSystemTrayIcon(win)
     win.tray_icon.setIcon(win.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
