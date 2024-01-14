@@ -3,7 +3,6 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QMenu
 from PyQt5.uic import loadUi
 from PyQt5.QtCore import Qt, QPoint
 from PyQt5.QtGui import QImage
-from keyboard import is_pressed
 from time import sleep
 import sys
 
@@ -60,14 +59,20 @@ class NetCheckerThread(QThread):
     def run(self):
         while 1:
             network_interfaces = str(os.popen('netsh wlan show interfaces').read())
-            if mainWifi in network_interfaces:
-                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
-                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
-            elif robotWifi in network_interfaces:
-                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
-                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+            networks = str(os.popen('netsh wlan show networks').read())
+            if mainWifi in networks:
+                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                if mainWifi in network_interfaces:
+                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
             else:
-                print("no connection found.")
+                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+
+            if robotWifi in networks:
+                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                if robotWifi in network_interfaces:
+                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+            else:
+                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
             sleep(0.25)
 
