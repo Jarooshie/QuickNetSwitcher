@@ -56,10 +56,10 @@ class rippleButton(QPushButton):
             qp.setOpacity(self._animation.currentValue() / 300)
 
 
-def NetCheckerThread(QThread):
+class NetCheckerThread(QThread):
     def run(self):
         while 1:
-            network_interfaces = subprocess.check_output("netsh wlan show interfaces")
+            network_interfaces = str(subprocess.check_output("netsh wlan show interfaces"))
             if mainWifi in network_interfaces:
                 mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
                 pass
@@ -68,6 +68,8 @@ def NetCheckerThread(QThread):
                 pass
             else:
                 print("no connection found.")
+
+            sleep(0.25)
 
 win = None
 networks = []
@@ -106,6 +108,10 @@ def __init__():
     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
     networks.append(robotNet)
+
+    NTC = NetCheckerThread()
+    NTC.start()
+
 
     tray_menu = QMenu()
     tray_menu.addAction(show_action)
