@@ -59,12 +59,14 @@ class rippleButton(QPushButton):
 class NetCheckerThread(QThread):
     def run(self):
         while 1:
-            network_interfaces = str(subprocess.check_output("netsh wlan show interfaces"))
+            network_interfaces = str(subprocess.check_output("netsh wlan show interfaces", shell=True))
             if mainWifi in network_interfaces:
                 mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
                 pass
             elif robotWifi in network_interfaces:
                 robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
                 pass
             else:
                 print("no connection found.")
