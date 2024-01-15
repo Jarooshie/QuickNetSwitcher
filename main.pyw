@@ -14,7 +14,7 @@ from win32api import GetMonitorInfo, MonitorFromPoint
 mainWifi = "mainWifi"
 robotWifi = "3065"
 
-xOffset, yOffset = 0,0    #edit based on your screen
+xOffset, yOffset = 0,0    #Edit these values based on your screen (run the app first with 0,0 offset then change them as you desire)
 
 
 
@@ -25,7 +25,7 @@ class rippleButton(QPushButton):
         self.pressed.connect(self._start_animation)
         self.clickedPos = QPoint()
 
-    def _start_animation(self,):
+    def _start_animation(self):
         self.t = 0
         self._radius = 0
         self._animation = QVariantAnimation(startValue=0.0)
@@ -36,8 +36,8 @@ class rippleButton(QPushButton):
         self._animation.start()
 
         mouse = QCursor().pos()
-        self.clickedPos.setX(mouse.x() - self.parent().frameGeometry().x() - self.frameGeometry().x())  #GlobalMouseXY - AppXY - ButtonInAppXY
-        self.clickedPos.setY(mouse.y() - self.parent().frameGeometry().y()  - self.frameGeometry().y() ) #get the clicked button mouse position relative to the button coordinates
+        self.clickedPos.setX(mouse.x() - self.parent().frameGeometry().x() - self.frameGeometry().x())  #GlobalMouseXY - AppXY - ButtonInAppXY = clickedXY
+        self.clickedPos.setY(mouse.y() - self.parent().frameGeometry().y()  - self.frameGeometry().y() ) #Get the clicked button mouse position relative to the button coordinates
 
     def _handle_valueChanged(self, value):
         self._radius = value*2
@@ -78,6 +78,12 @@ class NetCheckerThread(QThread):
 
             sleep(0.25) # 0.25s refresh rate
 
+def createMainConnection():
+    os.popen(f'netsh wlan connect name="{mainWifi}"') # App may be marked as a virus because of this line (can't find another solution)
+
+def createRobotConnection():
+    os.popen(f'netsh wlan connect name="{robotWifi}"')
+
 win = None
 
 monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
@@ -96,7 +102,7 @@ def __init__():
     global robotNet
     app = QApplication(sys.argv)
     win = QDialog()
-    height,width = 51,171 #app dimentions 
+    height,width = 51,171 #app dimensions 
 
     win.setWindowFlag(QtCore.Qt.FramelessWindowHint)
     win.setAttribute(Qt.WA_TranslucentBackground,True)
@@ -110,8 +116,8 @@ def __init__():
     win.tray_icon.setToolTip("Quick Net Switcher\n-  Made by 3065  -")
 
     show_action = QtWidgets.QAction("Show", win)
-    quit_action = QtWidgets.QAction("Exit", win)
     hide_action = QtWidgets.QAction("Hide", win)
+    quit_action = QtWidgets.QAction("Exit", win)
     show_action.triggered.connect(win.show)
     hide_action.triggered.connect(win.hide)
     quit_action.triggered.connect(app.quit)
@@ -142,11 +148,4 @@ def __init__():
 
     sys.exit(app.exec_())
 
-def createMainConnection():
-    os.popen(f'netsh wlan connect name="{mainWifi}"') # app may be marked as a virus because of this line (can't find another solution)
-
-def createRobotConnection():
-    os.popen(f'netsh wlan connect name="{robotWifi}"')
-
 __init__()
-
