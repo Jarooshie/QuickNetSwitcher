@@ -60,22 +60,25 @@ class rippleButton(QPushButton):
 class NetCheckerThread(QThread):
     def run(self):
         while 1:
-            network_interfaces = str(os.popen('netsh wlan show interfaces').read())
-            networks = str(os.popen('netsh wlan show networks').read())
-            if mainWifi in networks:
-                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
-                if mainWifi in network_interfaces:
-                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
-            else:
-                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
+            try:
+                network_interfaces = str(os.popen('netsh wlan show interfaces').read())
+                networks = str(os.popen('netsh wlan show networks').read())
+                if mainWifi in networks:
+                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
+                    if mainWifi in network_interfaces:
+                        mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
+                else:
+                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
 
-            if robotWifi in networks:
-                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
-                if robotWifi in network_interfaces:
-                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
-            else:
-                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
-
+                if robotWifi in networks:
+                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
+                    if robotWifi in network_interfaces:
+                        robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
+                else:
+                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
+            except Exception as err:
+                pass
+            
             sleep(0.25) # 0.25s refresh rate
 
 def createMainConnection():
