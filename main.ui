@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>161</width>
-    <height>39</height>
+    <width>171</width>
+    <height>51</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -16,8 +16,8 @@
   <widget class="QPushButton" name="MainNet">
    <property name="geometry">
     <rect>
-     <x>0</x>
-     <y>0</y>
+     <x>10</x>
+     <y>10</y>
      <width>71</width>
      <height>31</height>
     </rect>
@@ -46,7 +46,7 @@ QPushButton:pressed{
    <property name="geometry">
     <rect>
      <x>90</x>
-     <y>0</y>
+     <y>10</y>
      <width>71</width>
      <height>31</height>
     </rect>

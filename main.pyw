@@ -1,6 +1,4 @@
 from PyQt5 import QtWidgets,QtCore
-from PyQt5.uic import loadUi
-
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
@@ -9,20 +7,25 @@ import os
 import sys
 from time import sleep
 
-from win32api import GetMonitorInfo, MonitorFromPoint, GetSystemMetrics
+from win32api import GetMonitorInfo, MonitorFromPoint
 
-mainWifi = "TotalWifi"
+
+
+mainWifi = "mainWifi"
 robotWifi = "3065"
 
 xOffset, yOffset = 0,0    #edit based on your screen
+
+
 
 class rippleButton(QPushButton):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._radius = 0
         self.pressed.connect(self._start_animation)
+        self.clickedPos = QPoint()
 
-    def _start_animation(self):
+    def _start_animation(self,):
         self.t = 0
         self._radius = 0
         self._animation = QVariantAnimation(startValue=0.0)
@@ -31,6 +34,10 @@ class rippleButton(QPushButton):
         self._animation.setDuration(300)
         self._animation.setEndValue(self.width() / 2.0)
         self._animation.start()
+
+        mouse = QCursor().pos()
+        self.clickedPos.setX(mouse.x() - self.parent().frameGeometry().x() - self.frameGeometry().x())  #GlobalMouseXY - AppXY - ButtonInAppXY
+        self.clickedPos.setY(mouse.y() - self.parent().frameGeometry().y()  - self.frameGeometry().y() ) #get the clicked button mouse position relative to the button coordinates
 
     def _handle_valueChanged(self, value):
         self._radius = value*2
@@ -47,7 +54,7 @@ class rippleButton(QPushButton):
             qp = QPainter(self)
             qp.setBrush(QColor(0, 0, 0, 100-self.t))
             qp.setPen(Qt.NoPen)
-            qp.drawEllipse(self.rect().center(), self._radius, self._radius)
+            qp.drawEllipse(self.clickedPos, self._radius, self._radius)
             qp.setOpacity(self._animation.currentValue() / 300)
 
 class NetCheckerThread(QThread):
@@ -56,23 +63,22 @@ class NetCheckerThread(QThread):
             network_interfaces = str(os.popen('netsh wlan show interfaces').read())
             networks = str(os.popen('netsh wlan show networks').read())
             if mainWifi in networks:
-                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
                 if mainWifi in network_interfaces:
-                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
             else:
-                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
 
             if robotWifi in networks:
-                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
                 if robotWifi in network_interfaces:
-                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
             else:
-                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
+                robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
 
-            sleep(0.25)
+            sleep(0.25) # 0.25s refresh rate
 
 win = None
-networks = []
 
 monitor_info = GetMonitorInfo(MonitorFromPoint((0,0)))
 monitor_area = monitor_info.get("Monitor")
@@ -82,7 +88,7 @@ screen_width = monitor_area[2]
 taskbar_height = screen_height-work_area[3]
 
 screen_height = 1080
-screen_width = 1920 # nvm
+screen_width = 1920 #I set it 1080,1920 to prevent issues
 
 def __init__():
     global win
@@ -90,7 +96,7 @@ def __init__():
     global robotNet
     app = QApplication(sys.argv)
     win = QDialog()
-    height,width = 51,171
+    height,width = 51,171 #app dimentions 
 
     win.setWindowFlag(QtCore.Qt.FramelessWindowHint)
     win.setAttribute(Qt.WA_TranslucentBackground,True)
@@ -116,15 +122,11 @@ def __init__():
 
     mainNet.clicked.connect(createMainConnection)
 
-    networks.append(mainNet)
-
     robotNet = rippleButton(robotWifi,win)
     robotNet.setGeometry(90,10,71,31)
     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
     robotNet.clicked.connect(createRobotConnection)
-
-    networks.append(robotNet)
 
     NTC = NetCheckerThread()
     NTC.start()
@@ -139,9 +141,9 @@ def __init__():
     win.show()
 
     sys.exit(app.exec_())
-    
+
 def createMainConnection():
-    os.popen(f'netsh wlan connect name="{mainWifi}"')
+    os.popen(f'netsh wlan connect name="{mainWifi}"') # app may be marked as a virus because of this line (can't find another solution)
 
 def createRobotConnection():
     os.popen(f'netsh wlan connect name="{robotWifi}"')
