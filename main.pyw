@@ -71,16 +71,18 @@ class NetCheckerThread(QThread):
             try:
                 network_interfaces = str(os.popen('netsh wlan show interfaces').read())
                 networks = str(os.popen('netsh wlan show networks').read())
-                if mainWifi in networks:
+                mainWifi = SETTINGS[0]["mainWifi"]
+                robotWiFi = SETTINGS[0]["robotWifi"]
+                if SETTINGS[0]["mainWifi"] in networks:
                     mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
-                    if mainWifi in network_interfaces:
+                    if SETTINGS[0]["mainWifi"] in network_interfaces:
                         mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
                 else:
                     mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
 
-                if robotWifi in networks:
+                if SETTINGS[0]["robotWifi"] in networks:
                     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
-                    if robotWifi in network_interfaces:
+                    if SETTINGS[0]["robotWifi"] in network_interfaces:
                         robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
                 else:
                     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
@@ -91,10 +93,10 @@ class NetCheckerThread(QThread):
             sleep(1) # 1s refresh rate
 
 def createMainConnection():
-    os.popen(f'netsh wlan connect name="{mainWifi}"') # App may be marked as a virus because of this line (can't find another solution)
+    os.popen(f'netsh wlan connect name="{SETTINGS[0]["mainWifi"]}"') # App may be marked as a virus because of this line (can't find another solution)
 
 def createRobotConnection():
-    os.popen(f'netsh wlan connect name="{robotWifi}"')
+    os.popen(f'netsh wlan connect name="{SETTINGS[0]["robotWifi"]}"')
 
 win = None
 
@@ -201,6 +203,10 @@ def applySettings():
     mainWifi = settings.mainWifi.text()
     robotWifi = settings.robotWifi.text()
 
+    print(mainWifi)
+    print(robotWifi)
+
+    
     mainNet.setText(settings.mainWifi.text())
     robotNet.setText(settings.robotWifi.text())
     win.setGeometry(screen_width - width + settings.xOffset.value(),screen_height - taskbar_height - height - settings.yOffset.value(), width, height)
@@ -209,6 +215,6 @@ def applySettings():
         r.write(json.dumps(SETTINGS,indent=4))
 
 
-    settings.hide()
+    #settings.hide()
 
 __init__()
