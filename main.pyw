@@ -2,23 +2,31 @@ from PyQt5 import QtWidgets,QtCore
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import *
 from PyQt5.QtGui import *
+from PyQt5.uic import loadUi
+
+import builder
 
 import os
 import sys
+import json
 from time import sleep
 
 from win32api import GetMonitorInfo, MonitorFromPoint
 
+with open("settings.json", "r") as r:
+        SETTINGS = json.loads(r.read())
+
+if not os.path.isfile("./Refresher.exe"):
+    builder.buildScanner()
 
 
-mainWifi = "mainWifi"
-robotWifi = "3065"
+mainWifi = SETTINGS[0]["mainWifi"]
+robotWifi = SETTINGS[0]["robotWifi"]
 
-xOffset, yOffset = 0,0    #Edit these values based on your screen (run the app first with 0,0 offset then change them as you desire)
-
-
+xOffset, yOffset = SETTINGS[0]["xOffset"],SETTINGS[0]["yOffset"]
 
 class rippleButton(QPushButton):
+    global buttonDown
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._radius = 0
@@ -78,8 +86,9 @@ class NetCheckerThread(QThread):
                     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
             except Exception as err:
                 pass
-            
-            sleep(0.25) # 0.25s refresh rate
+
+            os.popen("Refresher.exe")
+            sleep(1) # 1s refresh rate
 
 def createMainConnection():
     os.popen(f'netsh wlan connect name="{mainWifi}"') # App may be marked as a virus because of this line (can't find another solution)
@@ -101,10 +110,22 @@ screen_width = 1920 #I set it 1080,1920 to prevent issues
 
 def __init__():
     global win
-    global mainNet
-    global robotNet
+    global mainNet, robotNet
+    global settings
+    global height,width
     app = QApplication(sys.argv)
-    win = QDialog()
+
+    settings = loadUi("settings.ui")
+    settings.setWindowFlag(QtCore.Qt.WindowContextHelpButtonHint,False)
+    settings.Apply.clicked.connect(applySettings)
+    settings.Cancel.clicked.connect(settings.hide)
+    settings.setWindowIcon(settings.style().standardIcon(QtWidgets.QStyle.SP_VistaShield))
+    settings.setWindowFlag(QtCore.Qt.FramelessWindowHint)
+    settings.setWindowFlag(QtCore.Qt.WindowStaysOnTopHint)
+    settings.setWindowFlag(QtCore.Qt.Tool) 
+    settings.setAttribute(Qt.WA_TranslucentBackground,True)
+
+    win = QMainWindow()
     height,width = 51,171 #app dimensions 
 
     win.setWindowFlag(QtCore.Qt.FramelessWindowHint)
@@ -121,9 +142,11 @@ def __init__():
     show_action = QtWidgets.QAction("Show", win)
     hide_action = QtWidgets.QAction("Hide", win)
     quit_action = QtWidgets.QAction("Exit", win)
+    settings_action = QtWidgets.QAction("Settings", win)
     show_action.triggered.connect(win.show)
     hide_action.triggered.connect(win.hide)
     quit_action.triggered.connect(app.quit)
+    settings_action.triggered.connect(showSettings)
 
     mainNet = rippleButton(mainWifi,win)
     mainNet.setGeometry(10,10,71,31)
@@ -135,12 +158,20 @@ def __init__():
     robotNet.setGeometry(90,10,71,31)
     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
+
+
+    settings.setStyleSheet('''QDialog{
+background-color: rgb(25,25,25);
+border-radius: 5px;
+}''')
+
     robotNet.clicked.connect(createRobotConnection)
 
     NTC = NetCheckerThread()
     NTC.start()
 
     tray_menu = QMenu()
+    tray_menu.addAction(settings_action)
     tray_menu.addAction(show_action)
     tray_menu.addAction(hide_action)
     tray_menu.addAction(quit_action)
@@ -150,5 +181,34 @@ def __init__():
     win.show()
 
     sys.exit(app.exec_())
+
+def showSettings():
+    settings.mainWifi.setText(SETTINGS[0]["mainWifi"])
+    settings.robotWifi.setText(SETTINGS[0]["robotWifi"])
+
+    settings.xOffset.setValue(SETTINGS[0]["xOffset"])
+    settings.yOffset.setValue(SETTINGS[0]["yOffset"])
+
+    settings.show()
+
+def applySettings():
+    SETTINGS[0]["mainWifi"] = settings.mainWifi.text()
+    SETTINGS[0]["robotWifi"] = settings.robotWifi.text()
+    SETTINGS[0]["xOffset"] = settings.xOffset.value()
+    SETTINGS[0]["yOffset"] = settings.yOffset.value()
+
+
+    mainWifi = settings.mainWifi.text()
+    robotWifi = settings.robotWifi.text()
+
+    mainNet.setText(settings.mainWifi.text())
+    robotNet.setText(settings.robotWifi.text())
+    win.setGeometry(screen_width - width + settings.xOffset.value(),screen_height - taskbar_height - height - settings.yOffset.value(), width, height)
+
+    with open("settings.json", "w+") as r:
+        r.write(json.dumps(SETTINGS,indent=4))
+
+
+    settings.hide()
 
 __init__()
