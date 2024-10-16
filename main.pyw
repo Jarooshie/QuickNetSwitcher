@@ -116,6 +116,7 @@ class NetCheckerThread(QThread):
 
 def createMainConnection():
     os.popen(f'netsh wlan connect name="{SETTINGS[0]["mainWifi"]}"') # App may be marked as a virus because of this line (can't find another solution)
+    os.popen(f'netsh wlan connect name="{SETTINGS[0]["mainWifi"]}"') # App may be marked as a virus because of this line (can't find another solution)
 
 def createRobotConnection():
     os.popen(f'netsh wlan connect name="{SETTINGS[0]["robotWifi"]}"')
