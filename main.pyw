@@ -7,6 +7,7 @@ from PyQt5.uic import loadUi
 import builder
 
 import os
+import threading
 import sys
 import json
 from time import sleep
@@ -16,8 +17,11 @@ from win32api import GetMonitorInfo, MonitorFromPoint
 with open("settings.json", "r") as r:
         SETTINGS = json.loads(r.read())
 
-if not os.path.isfile("./Refresher.exe"):
-    builder.buildScanner()
+# The builder is currently not recommended for use, Stay with the built-in Refresher.exe.
+#
+# if not os.path.isfile("./Refresher.exe"):
+#     builder.buildScanner()
+
 
 
 mainWifi = SETTINGS[0]["mainWifi"]
@@ -65,36 +69,77 @@ class rippleButton(QPushButton):
             qp.drawEllipse(self.clickedPos, self._radius, self._radius)
             qp.setOpacity(self._animation.currentValue() / 300)
 
+gray =  'QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}'
+red =   'QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}'
+green = 'QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}'
+
 class NetCheckerThread(QThread):
     def run(self):
         while 1:
             try:
                 network_interfaces = str(os.popen('netsh wlan show interfaces').read())
-                networks = str(os.popen('netsh wlan show networks').read())
-                if mainWifi in networks:
-                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
-                    if mainWifi in network_interfaces:
-                        mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
-                else:
-                    mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
+                networks = str(os.popen('netsh wlan show networks | findstr SSID').read())
 
-                if robotWifi in networks:
-                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #bd2038;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY RED COLOR
-                    if robotWifi in network_interfaces:
-                        robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #198754;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GREEN COLOR
+                mainWifi = SETTINGS[0]["mainWifi"]
+                robotWiFi = SETTINGS[0]["robotWifi"]
+
+                # whole lotta nonsense below but it works 😃👍
+
+                if mainWifi in network_interfaces:
+                    mainNet.setStyleSheet(green) # GREEN
                 else:
-                    robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}') #DISPLAY GRAY COLOR
+                    mainNet.setStyleSheet(gray) # GRAY
+                if robotWiFi in network_interfaces:
+                    robotNet.setStyleSheet(green) # GREEN
+                else:
+                    robotNet.setStyleSheet(gray) # GRAY
+
+                if mainWifi in networks:
+                    mainNet.setStyleSheet(red) # RED
+                    if mainWifi in network_interfaces:
+                        mainNet.setStyleSheet(green) # GREEN
+                else:
+                    mainNet.setStyleSheet(gray) # GRAY
+
+                if robotWiFi in networks:
+                    robotNet.setStyleSheet(red) # RED
+                    if robotWiFi in network_interfaces:
+                        robotNet.setStyleSheet(green) # GREEN
+                else:
+                    robotNet.setStyleSheet(gray) # GRAY
+            
             except Exception as err:
                 pass
 
-            os.popen("Refresher.exe")
+            #os.popen("Refresher.exe")
             sleep(1) # 1s refresh rate
 
 def createMainConnection():
-    os.popen(f'netsh wlan connect name="{mainWifi}"') # App may be marked as a virus because of this line (can't find another solution)
+    os.popen(f'netsh wlan connect name="{SETTINGS[0]["mainWifi"]}"') # App may be marked as a virus because of this line (can't find another solution)
 
 def createRobotConnection():
-    os.popen(f'netsh wlan connect name="{robotWifi}"')
+    os.popen(f'netsh wlan connect name="{SETTINGS[0]["robotWifi"]}"')
+
+refreshing = False
+
+def refreshNetworks():
+    global refreshing
+    if refreshing == False:
+        refreshing = True
+
+        refreshBtn.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 18px;\n  border-radius: 5px;\n}')
+        refreshBtn.setEnabled(False)
+
+        refreshing_text.setGeometry(15,14,71,16)
+        refreshing_text.setStyleSheet("color:white")
+        refreshing_text.show()
+        result = str(os.popen('Refresher.exe').read()) # .read() is to make the function stop until it recieves a result (1)
+        refreshing_text.hide()
+
+        refreshBtn.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #4D68F9;\n  font-size: 18px;\n  border-radius: 5px;\n}')
+        refreshBtn.setEnabled(True)
+
+        refreshing = False
 
 win = None
 
@@ -113,6 +158,7 @@ def __init__():
     global mainNet, robotNet
     global settings
     global height,width
+    global refreshing_text, refreshBtn
     app = QApplication(sys.argv)
 
     settings = loadUi("settings.ui")
@@ -126,7 +172,7 @@ def __init__():
     settings.setAttribute(Qt.WA_TranslucentBackground,True)
 
     win = QMainWindow()
-    height,width = 51,171 #app dimensions 
+    height,width = 81,171 #app dimensions 
 
     win.setWindowFlag(QtCore.Qt.FramelessWindowHint)
     win.setAttribute(Qt.WA_TranslucentBackground,True)
@@ -139,6 +185,9 @@ def __init__():
     win.tray_icon.setIcon(win.style().standardIcon(QtWidgets.QStyle.SP_BrowserReload))
     win.tray_icon.setToolTip("Quick Net Switcher\n-  Made by 3065  -")
 
+    refreshing_text = QtWidgets.QLabel("Refreshing...", win)
+    refreshing_text.hide()
+
     show_action = QtWidgets.QAction("Show", win)
     hide_action = QtWidgets.QAction("Hide", win)
     quit_action = QtWidgets.QAction("Exit", win)
@@ -149,13 +198,13 @@ def __init__():
     settings_action.triggered.connect(showSettings)
 
     mainNet = rippleButton(mainWifi,win)
-    mainNet.setGeometry(10,10,71,31)
+    mainNet.setGeometry(10,10 + 30,71,31)
     mainNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
     mainNet.clicked.connect(createMainConnection)
 
     robotNet = rippleButton(robotWifi,win)
-    robotNet.setGeometry(90,10,71,31)
+    robotNet.setGeometry(90,10 +  30,71,31)
     robotNet.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #545454;\n  font-size: 12px;\n  border-radius: 5px;\n}')
 
 
@@ -166,6 +215,13 @@ border-radius: 5px;
 }''')
 
     robotNet.clicked.connect(createRobotConnection)
+
+    refreshBtn = rippleButton("↻",win)
+    refreshBtn.setGeometry(130,2,30,30)
+    refreshBtn.setStyleSheet('QPushButton{\n color: #ffffff;\n background-color: #4D68F9;\n  font-size: 18px;\n  border-radius: 5px;\n}')
+    refreshBtn.setToolTip("Refresh")
+
+    refreshBtn.clicked.connect(lambda: threading.Thread(target=refreshNetworks).start())
 
     NTC = NetCheckerThread()
     NTC.start()
@@ -197,18 +253,14 @@ def applySettings():
     SETTINGS[0]["xOffset"] = settings.xOffset.value()
     SETTINGS[0]["yOffset"] = settings.yOffset.value()
 
-
     mainWifi = settings.mainWifi.text()
     robotWifi = settings.robotWifi.text()
-
+    
     mainNet.setText(settings.mainWifi.text())
     robotNet.setText(settings.robotWifi.text())
     win.setGeometry(screen_width - width + settings.xOffset.value(),screen_height - taskbar_height - height - settings.yOffset.value(), width, height)
 
     with open("settings.json", "w+") as r:
         r.write(json.dumps(SETTINGS,indent=4))
-
-
-    settings.hide()
 
 __init__()
